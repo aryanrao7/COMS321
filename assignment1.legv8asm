@@ -1,0 +1,341 @@
+// Aryan Rao: aryanrao@iastate.edu
+
+main:
+    // Function prologue, allocating space for local variables
+    SUBI SP, SP, #16
+    STUR X19, [SP, #0]
+    STUR X20, [SP, #8]
+
+    // Initialize X19 and X20
+    ADD X19, XZR, XZR 
+    ADDI X20, XZR, #10
+
+    // Set function arguments
+    ADD X0, XZR, X19
+    ADD X1, XZR, X20
+    BL fill
+
+    // Set function arguments
+    ADD X0, XZR, X19
+    ADD X1, XZR, X20
+    BL cycle_sort
+
+    // Set function arguments
+    ADD X0, XZR, X19
+    ADD X1, XZR, XZR
+    SUBI X2, X20, #1
+    ADDI X3, XZR, #0
+    BL binary_search
+
+    // Print the result
+    PRNT X0
+
+    // Set function arguments
+    ADD X0, XZR, X19
+    ADD X1, XZR, XZR
+    SUBI X2, X20, #1
+    ADDI X3, XZR, #9
+    BL binary_search
+
+    // Print the result
+    PRNT X0
+
+    // Set function arguments
+    ADD X0, XZR, X19
+    ADD X1, XZR, XZR
+    SUBI X2, X20, #1
+    ADDI X3, XZR, #5
+    BL binary_search
+
+    // Print the result
+    PRNT X0
+
+    // Set function arguments
+    ADD X0, XZR, X19
+    ADD X1, XZR, XZR
+    SUBI X2, X20, #1
+    ADDI X3, XZR, #10
+    BL binary_search
+
+    // Print the result
+    PRNT X0
+
+    // Function epilogue, restoring the stack pointer
+    LDUR X20, [SP, #8]
+    LDUR X19, [SP, #0]
+    ADDI SP, SP, #16
+
+    // Branch to the end of the program
+    B end
+
+
+swap:
+    LDUR X9, [X0, #0] // Load the value at address X0 into register X9
+    LDUR X10, [X1, #0] // Load the value at address X1 into register X10
+
+    STUR X9, [X1, #0] // Store the value from X9 into the address pointed to by X1
+    STUR X10, [X0, #0] // Store the value from X10 into the address pointed to by X0
+
+    BR LR // Branch to the return address (LR)
+
+skip_duplicates:
+    ADD X9, X1, XZR // Initialize X9 with the value in X1
+
+    skip_duplicates_loop:
+        LSL X10, X9, #3 // Multiply X9 by 8 (shift left by 3) and add X0
+        ADD X10, X10, X0
+        LDUR X10, [X10, #0] // Load the value at the address calculated into X10
+        SUBS XZR, X2, X10 // Subtract X2 from X10 and set flags (Z - Zero flag)
+        B.NE skip_duplicates_end // Branch if not equal (Z flag is not set) to skip_duplicates_end
+        ADDI X9, X9, #1 // Increment X9 by 1
+        B skip_duplicates_loop // Branch back to skip_duplicates_loop
+
+    skip_duplicates_end:
+        ADD X3, X9, XZR // Calculate the difference between X9 and XZR and store it in X3
+        BR LR // Branch to the return address (LR)
+
+fill:
+    ADD X9, XZR, XZR // Initialize X9 with 0
+
+    fill_loop:
+        ADD X10, XZR, X9 // Calculate X10 as X9
+        LSL X10, X10, #3 // Multiply X10 by 8 (shift left by 3)
+        ADD X10, X10, X0 // Add X0 to X10
+
+        SUB X11, X1, X9 // Calculate X11 as the difference between X1 and X9
+        SUBI X11, X11, #1 // Subtract 1 from X11
+
+        STUR X11, [X10, #0] // Store the value of X11 at the address calculated by X10
+
+        ADDI X9, X9, #1 // Increment X9 by 1
+
+        SUBS XZR, X9, X1 // Set flags (N - Negative) based on the result of X9 - X1
+        B.LT fill_loop // Branch to fill_loop if N flag is set (X9 is less than X1)
+
+    BR LR // Branch to the return address (LR)
+
+find_index:
+    ADDI X9, X2, #1 // Initialize X9 with X2 + 1
+    ADD X10, XZR, X2 // Initialize X10 with X2
+
+    SUBS XZR, X9, X1 // Set flags (N - Negative) based on the result of X9 - X1
+    B.LT fi_loop // Branch to fi_loop if N flag is set (X9 is less than X1)
+
+    B end_label // Branch to end_label
+
+    increment_label:
+    ADDI X10, X10, #1 // Increment X10 by 1
+    B loop_exit // Branch to loop_exit
+
+    fi_loop:
+        ADD X11, XZR, X9 // Calculate X11 as the difference between X9 and 0
+        LSL X11, X11, #3 // Multiply X11 by 8 (shift left by 3)
+        ADD X11, X11, X0 // Add X0 to X11
+        LDUR X11, [X11, #0] // Load the value at the address calculated by X11
+
+        SUBS XZR, X11, X3 // Set flags (N - Negative) based on the result of X11 - X3
+        B.LT increment_label // Branch to increment_label if N flag is set (X11 is less than X3)
+
+        loop_exit:
+            ADDI X9, X9, #1 // Increment X9 by 1
+            SUBS XZR, X9, X1 // Set flags (N - Negative) based on the result of X9 - X1
+            B.LT fi_loop // Branch to fi_loop if N flag is set (X9 is less than X1)
+
+    end_label:
+        ADD X4, XZR, X10 // Calculate X4 as the sum of 0 and X10
+        BR LR // Branch to the return address (LR)
+
+
+complete_cycle:
+    SUBI SP, SP, #32 // Allocate stack space
+    STUR X19, [SP, #0] // Save X19 on the stack
+    STUR X20, [SP, #8] // Save X20 on the stack
+    STUR X21, [SP, #16] // Save X21 on the stack
+    STUR LR, [SP, #24] // Save LR (return address) on the stack
+
+    lbl1:
+        SUBS XZR, X3, X2 // Set flags (Z - Zero flag) based on the result of X3 - X2
+        B.EQ lbl3 // Branch to lbl3 if Z flag is set (X3 equals X2)
+
+        ADD X19, X3, XZR // Calculate X19 as the sum of X3 and 0
+        ADD X20, X4, XZR // Calculate X20 as the sum of X4 and 0
+        ADD X3, X4, XZR // Calculate X3 as the sum of X4 and 0
+        BL find_index // Call the find_index subroutine
+        ADD X9, X4, XZR // Calculate X9 as the sum of X4 and 0
+        ADD X3, X19, XZR // Calculate X3 as the sum of X19 and 0
+        ADD X4, X20, XZR // Calculate X4 as the sum of X20 and 0
+        ADD X19, X1, XZR // Calculate X19 as the sum of X1 and 0
+        ADD X20, X2, XZR // Calculate X20 as the sum of X2 and 0
+        ADD X21, X3, XZR // Calculate X21 as the sum of X3 and 0
+
+        ADD X1, X9, XZR // Calculate X1 as the sum of X9 and 0
+        ADD X2, X4, XZR // Calculate X2 as the sum of X4 and 0
+        BL skip_duplicates // Call the skip_duplicates subroutine
+        ADD X9, X3, XZR // Calculate X9 as the sum of X3 and 0
+        ADD X1, X19, XZR // Calculate X1 as the sum of X19 and 0
+        ADD X2, X20, XZR // Calculate X2 as the sum of X20 and 0
+        ADD X3, X21, XZR // Calculate X3 as the sum of X21 and 0
+
+        LSL X10, X9, #3 // Multiply X9 by 8 (shift left by 3)
+        ADD X11, X10, X0 // Calculate X11 as the sum of X10 and X0
+        LDUR X12, [X11, #0] // Load the value at the address calculated by X11 into X12
+        STUR X4, [X11, #0] // Store the value of X4 at the address calculated by X11
+        ADD X4, X12, XZR // Calculate X4 as the sum of X12 and 0
+
+        SUBS XZR, X9, X2 // Set flags (Z - Zero flag) based on the result of X9 - X2
+        B.EQ lbl3 // Branch to lbl3 if Z flag is set (X9 equals X2)
+
+        B lbl1 // Branch back to lbl1
+
+    lbl3: 
+        LDUR LR, [SP, #24] // Restore LR from the stack
+        LDUR X21, [SP, #16] // Restore X21 from the stack
+        LDUR X20, [SP, #8] // Restore X20 from the stack
+        LDUR X19, [SP, #0] // Restore X19 from the stack
+        ADDI SP, SP, #32 // Deallocate stack space
+        BR LR // Branch to the return address (LR)
+
+cycle_sort:
+    SUBI SP, SP, #64      // Allocate space on the stack
+    STUR LR, [SP, #0]     // Save LR on the stack
+    STUR X19, [SP, #8]    // Save X19 on the stack
+    STUR X20, [SP, #16]   // Save X20 on the stack
+    STUR X21, [SP, #24]   // Save X21 on the stack
+    STUR X22, [SP, #32]   // Save X22 on the stack
+    STUR X23, [SP, #40]   // Save X23 on the stack
+    STUR X24, [SP, #48]   // Save X24 on the stack
+    STUR X25, [SP, #56]   // Save X25 on the stack
+    ADD X9, XZR, XZR      // Initialize X9 with 0
+    B enter_cycle_sort_loop
+
+increment_cycle_counter:
+    ADDI X9, X9, #1       // Increment X9 by 1
+    SUBI X15, X1, #1      // Calculate X15 as X1 - 1
+    SUBS XZR, X9, X15    // Set flags (N - Negative) based on X9 - X15
+    B.GE end_cycle_sort   // Branch to end_cycle_sort if N flag is not set (X9 >= X15)
+
+enter_cycle_sort_loop:
+    ADD X10, XZR, X9     // Calculate X10 as X9
+    LSL X10, X10, #3     // Multiply X10 by 8 (shift left by 3)
+    ADD X10, X10, X0     // Add X0 to X10
+    LDUR X11, [X10, #0]  // Load the value at the address calculated by X10 into X11
+
+    ADD X19, XZR, X2     // Copy X2 to X19
+    ADD X20, XZR, X3     // Copy X3 to X20
+    ADD X21, XZR, X4     // Copy X4 to X21
+    ADD X22, XZR, X9     // Copy X9 to X22
+    ADD X23, XZR, X10    // Copy X10 to X23
+    ADD X24, XZR, X11    // Copy X11 to X24
+    ADD X2, XZR, X9      // Copy X9 to X2
+    ADD X3, XZR, X11     // Copy X11 to X3
+    BL find_index        // Call the find_index subroutine
+    ADD X12, XZR, X4     // Copy X4 to X12
+    ADD X2, XZR, X19     // Copy X19 to X2
+    ADD X3, XZR, X20     // Copy X20 to X3
+    ADD X4, XZR, X21     // Copy X21 to X4
+    ADD X9, XZR, X22     // Copy X22 to X9
+    ADD X10, XZR, X23    // Copy X23 to X10
+    ADD X11, XZR, X24    // Copy X24 to X11
+
+    SUBS XZR, X12, X9    // Set flags (Z - Zero) based on X12 - X9
+    B.EQ increment_cycle_counter // Branch to increment_cycle_counter if Z flag is set (X12 == X9)
+
+    ADD X19, XZR, X1     // Copy X1 to X19
+    ADD X20, XZR, X2     // Copy X2 to X20
+    ADD X21, XZR, X3     // Copy X3 to X21
+    ADD X22, XZR, X9     // Copy X9 to X22
+    ADD X23, XZR, X10    // Copy X10 to X23
+    ADD X24, XZR, X11    // Copy X11 to X24
+    ADD X1, XZR, X12     // Copy X12 to X1
+    ADD X2, XZR, X11     // Copy X11 to X2
+    BL skip_duplicates    // Call the skip_duplicates subroutine
+    ADD X12, XZR, X3     // Copy X3 to X12
+
+    ADD X1, XZR, X19     // Copy X19 to X1
+    ADD X2, XZR, X20     // Copy X20 to X2
+    ADD X3, XZR, X21     // Copy X21 to X3
+    ADD X9, XZR, X22     // Copy X22 to X9
+    ADD X10, XZR, X23    // Copy X23 to X10
+    ADD X11, XZR, X24    // Copy X24 to X11
+
+    LSL X13, X12, #3     // Multiply X12 by 8 (shift left by 3)
+    ADD X13, X13, X0     // Add X0 to X13
+    LDUR X14, [X13, #0]  // Load the value at the address calculated by X13 into X14
+    STUR X11, [X13, #0]  // Store X11 at the address calculated by X13
+    ADD X11, X14, XZR    // Calculate X11 as the sum of X14 and 0
+
+    ADD X19, XZR, X2     // Copy X2 to X19
+    ADD X20, XZR, X3     // Copy X3 to X20
+    ADD X21, XZR, X4     // Copy X4 to X21
+    ADD X22, XZR, X9     // Copy X9 to X22
+    ADD X2, XZR, X9      // Copy X9 to X2
+    ADD X3, XZR, X12     // Copy X12 to X3
+    ADD X4, XZR, X11     // Copy X11 to X4
+    BL complete_cycle   // Call the complete_cycle subroutine
+
+    ADD X2, XZR, X19     // Copy X19 to X2
+    ADD X3, XZR, X20     // Copy X20 to X3
+    ADD X4, XZR, X21     // Copy X21 to X4
+    ADD X9, XZR, X22     // Copy X22 to X9
+    SUBI X15, X1, #1     // Calculate X15 as X1 - 1
+    SUBS XZR, X9, X15   // Set flags (N - Negative) based on X9 - X15
+    B.LT increment_cycle_counter // Branch to increment_cycle_counter if N flag is set (X9 < X15)
+
+end_cycle_sort:
+    LDUR X25, [SP, #56]   // Restore X25 from the stack
+    LDUR X24, [SP, #48]   // Restore X24 from the stack
+    LDUR X23, [SP, #40]   // Restore X23 from the stack
+    LDUR X22, [SP, #32]   // Restore X22 from the stack
+    LDUR X21, [SP, #24]   // Restore X21 from the stack
+    LDUR X20, [SP, #16]   // Restore X20 from the stack
+    LDUR X19, [SP, #8]    // Restore X19 from the stack
+    LDUR LR, [SP, #0]     // Restore LR from the stack
+    ADDI SP, SP, #64      // Deallocate the stack space
+    BR LR                 // Branch to the return address (LR)
+
+binary_search:
+    SUBI SP, SP, #8 // Reserve space on the stack for return address (LR)
+    STUR LR, [SP, #0] // Store the return address (LR) on the stack
+
+    SUBS XZR, X2, X1 // Calculate the difference between X2 and X1 and set flags
+    B.LT label_not_found // Branch to label_not_found if N flag is set (X2 < X1)
+
+    ADD X9, X1, X2 // Calculate X9 as the sum of X1 and X2
+    LSR X9, X9, #1 // Divide X9 by 2 (logical shift right by 1)
+
+    ADD X10, XZR, X9 // Initialize X10 as X9
+    LSL X10, X10, #3 // Multiply X10 by 8 (shift left by 3)
+    ADD X10, X10, X0 // Add X0 to X10
+    LDUR X10, [X10, #0] // Load the value at the address calculated by X10
+
+    SUBS XZR, X10, X3 // Calculate the difference between X10 and X3 and set flags
+    B.EQ label_found // Branch to label_found if Z flag is set (X10 == X3)
+
+    B.GT label_left // Branch to label_left if N flag is not set (X10 > X3)
+
+    label_right:
+        ADDI X1, X9, #1 // Increment X1 to (X9 + 1)
+        BL binary_search // Recursively call binary_search
+        B label_end
+
+    label_left:
+        SUBI X2, X9, #1 // Decrement X2 to (X9 - 1)
+        BL binary_search // Recursively call binary_search
+        B label_end
+
+    label_found:
+        ADD X0, XZR, X9 // Calculate X0 as the sum of 0 and X9
+        B label_end
+
+    label_not_found:
+        ADDI X0, XZR, #-1 // Set X0 to -1 to indicate not found
+        B label_end
+
+    label_end:
+        LDUR LR, [SP, #0] // Restore the return address (LR)
+        ADDI SP, SP, #8 // Release the stack space
+
+        BR LR // Return to the caller
+
+end:
+    HALT // End the program

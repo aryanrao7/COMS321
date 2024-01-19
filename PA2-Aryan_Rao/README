@@ -1,0 +1,6 @@
+//RUNNING INSTRUCTIONS
+//1. COMPILE THE CODE USING build.sh
+//2. RUN THE CODE USING run.sh
+//3. THE OUTPUT WILL BE IN decodedCode.txt and will be printed out on the console
+
+Currently it is loading assignment1.legv8asm.machine
